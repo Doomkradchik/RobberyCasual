@@ -265,10 +265,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellPrefab: {fileID: 2952738984707637092, guid: 94d1e9c6d8ccd8749b4c3cf68aba9c2e, type: 3}
-  _gridSize: {x: 3, y: 3}
+  _gridSize: {x: 5, y: 5}
   _padding: {x: 0.87, y: 0, z: 0.96}
   cellSize: {x: 1, y: 1, z: 1}
-  _cells: []
 --- !u!4 &662484736
 Transform:
   m_ObjectHideFlags: 0

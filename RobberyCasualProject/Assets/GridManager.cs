@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor;
 
 public class GridManager : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class GridManager : MonoBehaviour
     public Vector2Int _gridSize;
     public Vector3 _padding;
     public Vector3 cellSize;
-    public Cell[] _cells;
+    private Cell[] _cells;
 
     public static GridManager Instance;
 
@@ -26,12 +27,13 @@ public class GridManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
-        _cells = new Cell[_gridSize.x * _gridSize.y];
         CreateGrid();
     }
 
     private void CreateGrid()
     {
+        _cells = new Cell[_gridSize.x * _gridSize.y];
+
         for (int i = 0, x = 0; x < _gridSize.x; x++)
         {
             for (int y = 0; y < _gridSize.y; y++, i++)
