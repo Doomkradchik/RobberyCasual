@@ -5,7 +5,6 @@ public class Brick : MonoBehaviour
     [SerializeField]
     internal Vector2Int[] _segmentsFromCenter;
 
-
     private GameObject _selectedObject;
     private readonly Vector3 _verticalOffset = Vector3.up * 0.3f;
     private readonly Plane _plane = new Plane(Vector3.up, Vector3.zero);

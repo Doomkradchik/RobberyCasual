@@ -27,10 +27,9 @@ public class GridManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
-        CreateGrid();
     }
 
-    private void CreateGrid()
+    public void CreateGrid()
     {
         _cells = new Cell[_gridSize.x * _gridSize.y];
 
