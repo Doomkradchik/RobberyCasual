@@ -32,6 +32,7 @@ public class MainCharacterController : MonoBehaviour
             return;
         }
 
+        direction.Normalize();
         _characterAnimator.SetBool("Moving", true);
         transform.position += direction * _unitsPerSecond * Time.fixedDeltaTime;
         var rotation = Quaternion.LookRotation(direction, Vector3.up);
