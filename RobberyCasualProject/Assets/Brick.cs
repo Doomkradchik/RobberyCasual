@@ -1,27 +1,34 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Brick : MonoBehaviour
 {
     [SerializeField]
-    internal Vector2Int[] _segmentsFromCenter;
+    internal BrickParamsConfig _config;
 
-    private GameObject _selectedObject;
     private readonly Vector3 _verticalOffset = Vector3.up * 0.3f;
-    private readonly Plane _plane = new Plane(Vector3.up, Vector3.zero);
-
     [SerializeField, Header("Diagnostics")]
     internal bool _inGrid;
+
+    private int _layer;
+
+    private void Awake()
+    {
+        _layer = gameObject.layer;
+    }
 
     private Ray getRay
     {
         get
         {
+            var camera = GridManager.Instance._renderer;
             Vector3 mousePosFar, mousePosNear;
             mousePosFar = mousePosNear = Input.mousePosition;
-            mousePosFar.z = Camera.main.farClipPlane;
-            mousePosNear.z = Camera.main.nearClipPlane;
-            var worldFar = Camera.main.ScreenToWorldPoint(mousePosFar);
-            var worldNear = Camera.main.ScreenToWorldPoint(mousePosNear);
+            mousePosFar.z = camera.farClipPlane;
+            mousePosNear.z = camera.nearClipPlane;
+            var worldFar = camera.ScreenToWorldPoint(mousePosFar);
+            var worldNear = camera.ScreenToWorldPoint(mousePosNear);
             return new Ray(worldNear, worldFar - worldNear);
         }
     }
@@ -34,7 +41,8 @@ public class Brick : MonoBehaviour
             _inGrid = false;
         }
 
-       _plane.Raycast(getRay, out float enter);
+        gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        GridManager.Instance.getPlane.Raycast(getRay, out float enter);
         transform.position = getRay.GetPoint(enter) + _verticalOffset;
 
         Cursor.visible = false;
@@ -42,21 +50,37 @@ public class Brick : MonoBehaviour
 
     private void OnMouseUp()
     {
-        _plane.Raycast(getRay, out float enter);
-        int layer = gameObject.layer;
-        gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        GridManager.Instance.getPlane.Raycast(getRay, out float enter);
 
-        if(Physics.Raycast(getRay, out RaycastHit hit))
+        if (Physics.Raycast(getRay, out RaycastHit hit))
         {
             if (hit.collider.GetComponentInParent<GridManager>() != null)
-                GridManager.Instance.TryPlaceBrick(hit.collider.gameObject, this);
+            {
+                var fit = GridManager.Instance.TryPlaceBrick(hit.collider.gameObject, this);
+                if (fit == false) transform.localPosition = Vector3.zero;
+            }
         }
         else
         {
-            transform.position = getRay.GetPoint(enter);
+            transform.localPosition = Vector3.zero;
         }
         Cursor.visible = true;
+        gameObject.layer = _layer;
+    }
+}
 
-        gameObject.layer = layer;
+[System.Serializable]
+public struct BrickParamsConfig : IEnumerable<Vector2Int>
+{
+    public Vector2Int[] segmentsFromCenter;
+
+    public IEnumerator GetEnumerator()
+    {
+        return segmentsFromCenter.GetEnumerator();
+    }
+
+    IEnumerator<Vector2Int> IEnumerable<Vector2Int>.GetEnumerator()
+    {
+        return (IEnumerator<Vector2Int>)segmentsFromCenter.GetEnumerator();
     }
 }

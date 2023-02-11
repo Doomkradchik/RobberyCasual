@@ -1,15 +1,18 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
-public class MainCharacterController : MonoBehaviour
+public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandler
 {
     [SerializeField]
     private float _unitsPerSecond = 1f;
 
+    [SerializeField]
+    private Transform _itemRoot;
+
     [Tooltip("Inputs")]
     private FixedJoystick _joystick;
-
     private Animator _characterAnimator;
+    public ItemConfig CurrentItem { get; private set; }
 
 
     private void Awake()
@@ -37,5 +40,22 @@ public class MainCharacterController : MonoBehaviour
         transform.position += direction * _unitsPerSecond * Time.fixedDeltaTime;
         var rotation = Quaternion.LookRotation(direction, Vector3.up);
         transform.rotation = rotation;
+    }
+
+    public void PickUp(ItemConfig itemInfo)
+    {
+        var itemInstance = Instantiate(itemInfo._pickUpPrefab, _itemRoot);
+        CurrentItem = itemInfo;
+
+        _characterAnimator.SetLayerWeight(1, 0.9f);
+    }
+
+
+    [ContextMenu(nameof(OnDrop))]
+    public void OnDrop()
+    {
+        CurrentItem = null;
+        _characterAnimator.SetLayerWeight(1, 0f);
+        Destroy(_itemRoot.GetChild(0).gameObject);
     }
 }

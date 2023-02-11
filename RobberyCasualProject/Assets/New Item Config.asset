@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 715bffe71e0b9e94d86b955c0a74c59b, type: 3}
+  m_Name: New Item Config
+  m_EditorClassIdentifier: 
+  _pickUpPrefab: {fileID: 6632279279864844248, guid: c6019a43f2c593940aab8b048e86fd54, type: 3}
+  _brickPrefab: {fileID: 2627760052744225061, guid: da35a72ee806b214fb6586d31d1dac3e, type: 3}
