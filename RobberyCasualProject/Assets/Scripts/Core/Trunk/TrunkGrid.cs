@@ -19,23 +19,18 @@ public class TrunkGrid : MonoBehaviour
 
     private Dictionary<Vector2Int, Cell> _cells;
 
-
-    public Vector2Int _gridSize;
-
     private void Awake()
     {
         Instance = this;
-
-        CreateGrid();
     }
 
-    private void CreateGrid()
+    public void CreateGrid(Vector2Int size)
     {
         _cells = new Dictionary<Vector2Int, Cell>();
 
-        for (int i = 0, x = 0; x < _gridSize.x; x++)
+        for (int i = 0, x = 0; x < size.x; x++)
         {
-            for (int y = 0; y < _gridSize.y; y++, i++)
+            for (int y = 0; y < size.y; y++, i++)
             {
                 var offset = new Vector3(x * cellSize.x, 0f, y * cellSize.z);
                 var cellPosition = transform.position + offset;
@@ -62,7 +57,8 @@ public class TrunkGrid : MonoBehaviour
 
         foreach (Vector2Int segmentPos in brick._config)
         {
-            if (_cells.TryGetValue(centerPosition + segmentPos, out Cell next) && next.captured == false)
+            var hasValue = _cells.TryGetValue(centerPosition + segmentPos, out Cell next);
+            if (hasValue && next.captured == false)
                 pendingCells.Add(next);
             else return false; 
         }

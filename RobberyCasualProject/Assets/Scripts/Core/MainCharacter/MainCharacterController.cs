@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.Events;
 public interface IPickUpHandler
 {
     void PickUp(ItemDefinition itemInfo);
@@ -24,6 +24,8 @@ public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandl
     private Animator _characterAnimator;
     public ItemDefinition CurrentItem { get; private set; }
     public bool CanPickUp => CurrentItem == null;
+
+    public UnityEvent Died;
 
     private void Awake()
     {
@@ -62,8 +64,11 @@ public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandl
 
     public void OnDrop()
     {
+        if (CurrentItem == null) { return; }
         CurrentItem = null;
         _characterAnimator.SetLayerWeight(1, 0f);
         Destroy(_itemRoot.GetChild(0).gameObject);
     }
+
+    public void OnDie() => Died?.Invoke();
 }

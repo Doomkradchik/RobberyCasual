@@ -7,7 +7,12 @@ public interface ITrunk
     void Close();
 }
 
-public class Trunk : Interactor<MainCharacterController>, ITrunk
+public interface ITrunkSizeProvider
+{
+    Vector2Int Size { get; }
+}
+
+public abstract class Trunk : Interactor<MainCharacterController>, ITrunk, ITrunkSizeProvider
 {
     [SerializeField]
     private Camera _trunkRenderer;
@@ -16,6 +21,8 @@ public class Trunk : Interactor<MainCharacterController>, ITrunk
     private Transform _spawnBrickSpot;
 
     private Brick _brick;
+
+    public abstract Vector2Int Size { get; }
 
     private void Start()
     {
