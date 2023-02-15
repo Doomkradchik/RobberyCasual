@@ -2,64 +2,68 @@ using UnityEngine.Events;
 using UnityEngine;
 using System.Collections;
 
-
-public interface ISleep
-{
-    public void Sleep();
-}
-
-public class Interactor<T> : MonoBehaviour, ISleep where T : MonoBehaviour
+public class Interactor<T> : MonoBehaviour where T : MonoBehaviour
 {
     [Header("Params")]
-    public bool _sleepAfterInteraction;
+    [SerializeField, Min(0.2f)]
+    private float _duration = 0.25f;
 
-    public float _cooldown = 1.2f;
+    [SerializeField]
+    private RadialProgressBarUI _progressBar;
 
-    private bool _canInteract;
-    private bool CanInteract
-    {
-        get
-        {
-            if (_sleepAfterInteraction == false)
-                return true;
-
-            return _canInteract;
-        }
-        set
-        {
-            _canInteract = value;
-        }
-    }
+    private bool _inSpot;
 
     public UnityEvent<T> Triggered;
     protected T _entity;
+
+    protected virtual bool CanInteract => true;
+
     protected virtual void Awake()
     {
         _entity = FindObjectOfType<T>();
         if (_entity == null)
             throw new System.InvalidOperationException();
-
-        CanInteract = true;
     }
 
-    private void OnCollisionEnter(Collision other)
+    private void OnDestroy()
     {
-        if(other.gameObject.GetComponent<T>() == _entity && CanInteract)
-        {
-            Triggered?.Invoke(_entity);
-            OnTriggered();
+        StopAllCoroutines();
+    }
 
-            CanInteract = false;
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.GetComponent<T>() == _entity && CanInteract)
+        {
+            _inSpot = true;
+            StartCoroutine(PrepareForInteraction());
         }
     }
 
-    protected virtual void OnTriggered() { }
-
-    private IEnumerator RaiseCooldownRoutine()
+    private void OnTriggerExit(Collider other)
     {
-        yield return new WaitForSeconds(_cooldown);
-        CanInteract = true;
+        _inSpot = false;
     }
 
-    public void Sleep() => StartCoroutine(RaiseCooldownRoutine());
+    private IEnumerator PrepareForInteraction()
+    {
+        var progress = 0f;
+        var expiredTime = 0f;
+        while(progress < 1f && _inSpot)
+        {
+            expiredTime += Time.deltaTime;
+            progress = expiredTime / _duration;
+            _progressBar.Progress = progress;
+            yield return null;
+        }
+
+        if (progress >= 1f)
+        {
+            Triggered?.Invoke(_entity);
+            OnTriggered();
+        }
+
+        _progressBar.Progress = 0f;
+    }
+
+    protected virtual void OnTriggered() { }
 }
