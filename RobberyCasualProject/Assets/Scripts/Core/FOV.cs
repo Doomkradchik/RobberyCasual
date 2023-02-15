@@ -23,17 +23,13 @@ public class FOV : MonoBehaviour
         for (int i = 0; i < _properties._rayCount + 1; i++)
         {
             var angle = _startingAngle + offset;
-
             var worldRay = new Ray(transform.position, transform.forward.RotateVector(offset));
 
             var length = Physics.Raycast(worldRay, out RaycastHit hit, distance)
-                ? Vector3.Distance(transform.position, GetPoint(hit))
+                ? hit.distance
                 : distance;
 
             var localPoint = Vector3.one.GetDirectionOffsetFromAngle(angle) * length;
-
-            //var collidedPoint = Vector3.one.GetDirectionFromAngle(angle) * distance;
-            Debug.DrawLine(transform.position, transform.position + worldRay.direction * length); // worldPosition
 
             // convert to local position
             _vertices[vi] = localPoint;
