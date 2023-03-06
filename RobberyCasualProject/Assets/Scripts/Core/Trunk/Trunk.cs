@@ -52,7 +52,11 @@ public abstract class Trunk : Interactor<MainCharacterController>, ITrunk, ITrun
         _trunkRenderer.gameObject.SetActive(true);
 
         if (item != null)
+        {
             _brick = Instantiate(item._brickPrefab, _spawnBrickSpot);
+            _brick.Return();
+        }
+          
     }
 
     protected override void OnTriggered()

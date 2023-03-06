@@ -5,14 +5,39 @@ using System;
 
 public class PatrolingController : MonoBehaviour
 {
+    private AgentProperties _calmState, _hurryState;
     private Animator _animator;
     private IPointProvider _pointProvider;
     private NavMeshAgent _agent;
 
     private float CRITICAL_DISTANCE = 1f;
 
-    public void Init(PointFactory factory)
+    [Serializable]
+    public struct AgentProperties
     {
+        public float speed;
+        public float angularSpeed;
+        public float acceleration;
+        public float stoppingDistance;
+    }
+
+    public bool Stopped
+    {
+        set
+        {
+            if (value)
+            {
+                StopAllCoroutines();
+            }
+
+            _agent.isStopped = value;
+        }
+    }
+
+    public void Init(PointFactory factory, AgentProperties calm, AgentProperties hurry)
+    {
+        _calmState = calm;
+        _hurryState = hurry;
         _pointProvider = factory;
         _agent = GetComponent<NavMeshAgent>();
 
@@ -20,22 +45,61 @@ public class PatrolingController : MonoBehaviour
         _animator.SetBool("Patroling", true);
     }
 
-    private bool IsReached =>
-        _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + CRITICAL_DISTANCE;
-
     public void ExecutePoint()
     {
-        StartCoroutine(DestinateToRoutine(_pointProvider.getNewPoint, () => _animator.SetBool("Patroling", false)));
+        PrepareForExecution(_calmState);
+        _animator.SetBool("Patroling", true);
+        StartCoroutine(DestinateToRoutine(() => _pointProvider.getNewPoint, false, () => _animator.SetBool("Patroling", false)));
     }
 
-    private IEnumerator DestinateToRoutine(Vector3 point, Action onDestinated)
+    public void FollowPlayer()
     {
+        var player = FindObjectOfType<MainCharacterController>();
+        PrepareForExecution(_hurryState);
+        StartCoroutine(DestinateToRoutine(() => player.transform.position, true));
+    }
+
+    private void PrepareForExecution(AgentProperties state)
+    {
+        Stopped = false;
+        state.Apply(_agent);
+        StopAllCoroutines();
+    }
+
+    private IEnumerator DestinateToRoutine(Func<Vector3> pointProvider, bool updatePath = false, Action onDestinated = null)
+    {
+        var path = new NavMeshPath();
+        var succesfully = NavMesh.CalculatePath(transform.position, pointProvider.Invoke(), NavMesh.AllAreas, path);
+
+        if (succesfully == false)
+            throw new System.InvalidOperationException();
+
+        _agent.SetPath(path);
+
         do
         {
-            _agent.SetDestination(point);
             yield return null;
+            if (updatePath)
+                _agent.SetDestination(pointProvider.Invoke());
         }
-        while (IsReached == false);
-        onDestinated.Invoke();
+        while (PathCompleted(pointProvider.Invoke()) == false);
+        onDestinated?.Invoke();
+    }
+
+    protected bool PathCompleted(Vector3 point)
+    {
+        return !_agent.pathPending &&
+            _agent.remainingDistance <= _agent.stoppingDistance + CRITICAL_DISTANCE;
+    }
+}
+
+public static class AgentProertiesExtension
+{
+    public static void Apply(this PatrolingController.AgentProperties properties, NavMeshAgent agent)
+    {
+        agent.speed = properties.speed;
+        agent.angularSpeed = properties.angularSpeed;
+        agent.acceleration = properties.acceleration;
+        agent.stoppingDistance = properties.stoppingDistance;
     }
 }

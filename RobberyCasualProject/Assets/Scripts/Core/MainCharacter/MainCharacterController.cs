@@ -14,6 +14,12 @@ public interface IDropHandler
 public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandler
 {
     [SerializeField]
+    private bool _joystickYFlipped = true;
+
+    [SerializeField]
+    private bool _joystickXFlipped = true;
+
+    [SerializeField]
     private float _unitsPerSecond = 1f;
 
     [SerializeField]
@@ -35,7 +41,10 @@ public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandl
 
     private void Update()
     {
-        Move(_joystick.Direction);
+        var input = _joystick.Direction;
+        input.x *= _joystickXFlipped ? -1f : 1f;
+        input.y *= _joystickYFlipped ? -1f : 1f;
+        Move(input);
     }
 
     private void Move(Vector2 input)
@@ -57,6 +66,7 @@ public class MainCharacterController : MonoBehaviour, IPickUpHandler, IDropHandl
     public void PickUp(ItemDefinition itemInfo)
     {
         var itemInstance = Instantiate(itemInfo._pickUpPrefab, _itemRoot);
+        itemInstance.transform.localPosition = Vector3.zero;
         CurrentItem = itemInfo;
 
         _characterAnimator.SetLayerWeight(1, 0.9f);

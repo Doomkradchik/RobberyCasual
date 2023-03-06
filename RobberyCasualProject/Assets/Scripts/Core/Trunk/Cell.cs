@@ -2,6 +2,12 @@
 
 public class Cell : MonoBehaviour
 {
-    internal Vector2Int position;
-    internal bool captured;
+    public void Init(Vector2Int position, bool captured = false)
+    {
+        _position = position;
+        _captured = captured;
+    }
+
+    internal Vector2Int _position;
+    internal bool _captured;
 }

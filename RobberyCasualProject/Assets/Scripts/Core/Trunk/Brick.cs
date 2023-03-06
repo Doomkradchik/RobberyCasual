@@ -74,10 +74,10 @@ public sealed class Brick : DragDropHandler
         gameObject.layer = _layer;
     }
 
-    private void Return()
+    public void Return()
     {
         if(TrunkGrid.Instance.TryPlaceBrick(Cell, this) == false)
-           transform.localPosition = Vector3.zero;
+           transform.localPosition = -transform.GetChild(0).localPosition;
     }
 }
 

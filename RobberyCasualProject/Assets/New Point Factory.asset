@@ -13,8 +13,5 @@ MonoBehaviour:
   m_Name: New Point Factory
   m_EditorClassIdentifier: 
   _points:
-  - {x: -5, y: -0.2, z: -5.54}
+  - {x: -4.15, y: -0.2, z: -5.54}
   - {x: 5, y: -0.2, z: -1.05}
-  - {x: -4.62, y: -0.47383583, z: 4.73}
-  - {x: 11.19, y: -0.47383583, z: -15.97}
-  - {x: 10.58, y: -0.47383583, z: 9.14}

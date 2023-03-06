@@ -1,70 +1,60 @@
 using UnityEngine;
-using System.Linq;
 using System.Collections.Generic;
 
 public class TrunkGrid : MonoBehaviour
 {
     [SerializeField]
-    private Cell _cellPrefab;
+    private GridInfo _info;
 
     [SerializeField]
     internal Camera _renderer;
 
-    public Vector3 _padding;
-    public Vector3 cellSize;
+    [System.Serializable]
+    public struct GridInfo
+    {
+        public Cell[] contents;
+        public Vector2Int size;
+    }
 
     public static TrunkGrid Instance;
-
     public Plane getPlane => new Plane(Vector3.up, transform.position);
-
-    private Dictionary<Vector2Int, Cell> _cells;
+    private Dictionary<Vector2Int, Cell> _cellByPositionProvider;
 
     private void Awake()
     {
-        Instance = this;
-    }
+        _cellByPositionProvider = new Dictionary<Vector2Int, Cell>();
 
-    public void CreateGrid(Vector2Int size)
-    {
-        _cells = new Dictionary<Vector2Int, Cell>();
-
-        for (int i = 0, x = 0; x < size.x; x++)
+        for (int i = 0, v = 0; i < _info.size.x; i++)
         {
-            for (int y = 0; y < size.y; y++, i++)
+            for (int j = 0; j < _info.size.y; j++, v++)
             {
-                var offset = new Vector3(x * cellSize.x, 0f, y * cellSize.z);
-                var cellPosition = transform.position + offset;
-                var newCell = Instantiate(_cellPrefab, cellPosition, Quaternion.identity);
-                newCell.position = new Vector2Int(x, y);
-
-                _cells.Add(newCell.position,  newCell);
-
-
-                newCell.transform.parent = transform;
-                newCell.gameObject.layer = gameObject.layer;
+                var position = new Vector2Int(j, i);
+                _cellByPositionProvider.Add(position, _info.contents[v]);
+                _info.contents[v].Init(position);
             }
         }
+        Instance = this;
     }
 
     public bool TryPlaceBrick(Cell cell, Brick brick)
     {
-        if (_cells.ContainsValue(cell) == false) { return false; } 
+        if (_cellByPositionProvider.ContainsValue(cell) == false) { return false; } 
 
-        if (cell.captured) { return false; }
+        if (cell._captured) { return false; }
 
-        var centerPosition = cell.position;
+        var centerPosition = cell._position;
         var pendingCells = new List<Cell>() { cell };
 
-        foreach (Vector2Int segmentPos in brick._config)
+        foreach (Vector2Int offset in brick._config)
         {
-            var hasValue = _cells.TryGetValue(centerPosition + segmentPos, out Cell next);
-            if (hasValue && next.captured == false)
+            var hasValue = _cellByPositionProvider.TryGetValue(centerPosition + offset, out Cell next);
+            if (hasValue && next._captured == false)
                 pendingCells.Add(next);
             else return false; 
         }
 
         foreach (var c in pendingCells)
-            c.captured = true;
+            c._captured = true;
 
         brick.Cell = cell;
         brick.transform.position = cell.transform.position;
@@ -76,12 +66,12 @@ public class TrunkGrid : MonoBehaviour
         if (brick._inGrid == false) { return; }
 
         var cell = brick.Cell;
-        cell.captured = false;
+        cell._captured = false;
 
-        var centerPosition = cell.position;
+        var centerPosition = cell._position;
 
         foreach (Vector2Int segmentPos in brick._config)
-            _cells[centerPosition + segmentPos].captured = false;
+            _cellByPositionProvider[centerPosition + segmentPos]._captured = false;
     }
 }
 

@@ -14,7 +14,7 @@ TagManager:
   - InterfaceTrunk
   - Door
   - Entity
-  - 
+  - IgnoreNavMesh
   - 
   - 
   - 

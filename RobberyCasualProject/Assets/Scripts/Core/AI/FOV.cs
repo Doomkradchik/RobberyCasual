@@ -25,9 +25,12 @@ public class FOV : MonoBehaviour
             var angle = _startingAngle + offset;
             var worldRay = new Ray(transform.position, transform.forward.RotateVector(offset));
 
-            var length = Physics.Raycast(worldRay, out RaycastHit hit, distance)
-                ? hit.distance
+            var length = Physics.Raycast(worldRay, out RaycastHit hit, distance, _properties._layerMask)
+                ? GetDistanceFromHit(hit)
                 : distance;
+
+            if(hit.collider != null)
+               OnCollided(hit.collider);
 
             var localPoint = Vector3.one.GetDirectionOffsetFromAngle(angle) * length;
 
@@ -46,6 +49,14 @@ public class FOV : MonoBehaviour
         }
     }
 
+    private float GetDistanceFromHit(RaycastHit hit)
+    {
+        if (hit.collider != null)
+            OnCollided(hit.collider);
+
+        return hit.distance;
+    }
+
     private void ApplyModifications()
     {
         _viewField.vertices = _vertices;
@@ -54,13 +65,7 @@ public class FOV : MonoBehaviour
         _viewField.RecalculateNormals();
     }
 
-    private Vector3 GetPoint(RaycastHit hit)
-    {
-        OnCollided(hit);
-        return hit.point;
-    }
-
-    protected virtual void OnCollided(RaycastHit hit) { }
+    protected virtual void OnCollided(Collider collider) { }
 
 
     [Serializable]

@@ -2,7 +2,6 @@ using Random = UnityEngine.Random;
 using UnityEngine;
 using System.Linq;
 
-
 public interface IPointProvider
 {
     Vector3 getNewPoint { get; }
@@ -46,7 +45,8 @@ public class PointFactory : ScriptableObject, IPointProvider
         {
             _indexes[i] = (_indexes[i] + 1) % _indexes.Length;
         }
-        Reverse();
+        if(_indexes.Length > 2)
+            Reverse();
     }
 
     private void Reverse()
